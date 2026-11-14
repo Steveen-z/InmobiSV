@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, name TEXT NOT NULL,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('comprador','vendedor','administrador')),phone TEXT NOT NULL DEFAULT '',active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)));
+CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,expires REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS properties(id INTEGER PRIMARY KEY,seller_id INTEGER NOT NULL REFERENCES users(id),title TEXT NOT NULL,department TEXT NOT NULL,city TEXT NOT NULL,price REAL NOT NULL CHECK(price>0),area REAL NOT NULL CHECK(area>0),width REAL NOT NULL CHECK(width>0),length REAL NOT NULL CHECK(length>0),kind TEXT NOT NULL,description TEXT NOT NULL,photos TEXT NOT NULL,lat REAL,lon REAL,status TEXT NOT NULL CHECK(status IN ('activa','pausada','vendida','rentada','pendiente','rechazada')),demo INTEGER NOT NULL DEFAULT 0,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS favorites(user_id INTEGER NOT NULL REFERENCES users(id),property_id INTEGER NOT NULL REFERENCES properties(id),saved_price REAL NOT NULL,created_at TEXT DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(user_id,property_id));
+CREATE TABLE IF NOT EXISTS price_history(id INTEGER PRIMARY KEY,property_id INTEGER NOT NULL REFERENCES properties(id),old_price REAL NOT NULL,new_price REAL NOT NULL,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS notifications(id INTEGER PRIMARY KEY,user_id INTEGER NOT NULL REFERENCES users(id),property_id INTEGER NOT NULL REFERENCES properties(id),message TEXT NOT NULL,is_read INTEGER NOT NULL DEFAULT 0,created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS role_requests(user_id INTEGER PRIMARY KEY REFERENCES users(id),status TEXT NOT NULL CHECK(status IN ('pendiente','aprobada','rechazada')));
+CREATE INDEX IF NOT EXISTS idx_properties_status ON properties(status,department);
+CREATE INDEX IF NOT EXISTS idx_favorites_property ON favorites(property_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id,is_read);
